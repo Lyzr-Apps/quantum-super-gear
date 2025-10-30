@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Console Error Monitor -->
+    <script>
+      (function() {
+        const errors = [];
+        const MAX_ERRORS = 10;
+
+        // Dynamically determine backend URL based on environment
+        function getBackendUrl() {
+          const hostname = window.location.hostname;
+          const protocol = window.location.protocol;
+
+          if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            // Localhost development
+            return `${protocol}//localhost:8889`;
+          } else if (hostname.includes('lyzrcompute.com')) {
+            // Production: Replace frontend port 3333 with backend port 8889
+            const backendHost = hostname.replace('3333-', '8889-');
+            return `${protocol}//${backendHost}`;
+          } else {
+            // Fallback to localhost
+            return `${protocol}//localhost:8889`;
+          }
+        }
+
+        // Capture console.error
+        const originalError = console.error;
+        console.error = function(...args) {
+          originalError.apply(console, args);
+          const errorMsg = args.map(arg =>
+            typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+          ).join(' ');
+
+          errors.push({
+            type: 'console.error',
+            message: errorMsg,
+            timestamp: new Date().toISOString(),
+            stack: new Error().stack
+          });
+
+          if (errors.length <= MAX_ERRORS) {
+            sendErrorToBackend(errorMsg, 'console.error');
+          }
+        };
+
+        // Capture console.warn for important warnings (Radix, React)
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+          originalWarn.apply(console, args);
+          const warnMsg = args.map(arg =>
+            typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+          ).join(' ');
+
+          // Only send specific important warnings
+          const isImportant = warnMsg.includes('Missing `Description`') ||
+                             warnMsg.includes('aria-describedby') ||
+                             warnMsg.includes('Radix') ||
+                             warnMsg.includes('React') ||
+                             warnMsg.includes('key prop');
+
+          if (isImportant) {
+            errors.push({
+              type: 'console.warn',
+              message: warnMsg,
+              timestamp: new Date().toISOString()
+            });
+
+            if (errors.length <= MAX_ERRORS) {
+              sendErrorToBackend(warnMsg, 'console.warn');
+            }
+          }
+        };
+
+        // Capture unhandled errors
+        window.addEventListener('error', function(event) {
+          const errorMsg = `${event.message} at ${event.filename}:${event.lineno}:${event.colno}`;
+          errors.push({
+            type: 'runtime_error',
+            message: errorMsg,
+            timestamp: new Date().toISOString(),
+            stack: event.error?.stack
+          });
+
+          if (errors.length <= MAX_ERRORS) {
+            sendErrorToBackend(errorMsg, 'runtime_error');
+          }
+        });
+
+        // Capture unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(event) {
+          const errorMsg = `Unhandled Promise Rejection: ${event.reason}`;
+          errors.push({
+            type: 'promise_rejection',
+            message: errorMsg,
+            timestamp: new Date().toISOString()
+          });
+
+          if (errors.length <= MAX_ERRORS) {
+            sendErrorToBackend(errorMsg, 'promise_rejection');
+          }
+        });
+
+        function sendErrorToBackend(message, type) {
+          // Send to FastAPI backend (dynamically determined)
+          fetch(`${getBackendUrl()}/report-error`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: message,
+              type: type,
+              timestamp: new Date().toISOString(),
+              url: window.location.href
+            })
+          }).catch(() => {
+            // Silently fail if backend is not available
+          });
+        }
+
+        // Make errors accessible globally for debugging
+        window.__consoleErrors = errors;
+      })();
+    </script>
+  </body>
+</html>
