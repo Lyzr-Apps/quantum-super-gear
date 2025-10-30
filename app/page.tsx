@@ -419,30 +419,31 @@ export default function CampaignManager() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-            {/* Stats Cards */}
-            {[
-              { label: 'Total Leads', value: stats.total, icon: BarChart3, color: 'text-blue-600' },
-              { label: 'Enriched', value: stats.enriched, icon: CheckCircle, color: 'text-green-600' },
-              { label: 'Approved', value: stats.approved, icon: Check, color: 'text-emerald-600' },
-              { label: 'Sent', value: stats.sent, icon: Send, color: 'text-cyan-600' }
-            ].map((stat, idx) => (
-              <Card key={idx} className="bg-white border-slate-200">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-600">{stat.label}</p>
-                      <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+              {/* Stats Cards */}
+              {[
+                { label: 'Total Leads', value: stats.total, icon: BarChart3, color: 'text-blue-600' },
+                { label: 'Enriched', value: stats.enriched, icon: CheckCircle, color: 'text-green-600' },
+                { label: 'Approved', value: stats.approved, icon: Check, color: 'text-emerald-600' },
+                { label: 'Sent', value: stats.sent, icon: Send, color: 'text-cyan-600' }
+              ].map((stat, idx) => (
+                <Card key={idx} className="bg-white border-slate-200">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-slate-600">{stat.label}</p>
+                        <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+                      </div>
+                      <stat.icon className={`w-8 h-8 ${stat.color}`} />
                     </div>
-                    <stat.icon className={`w-8 h-8 ${stat.color}`} />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="leads" className="space-y-4">
+            {/* Tabs */}
+            <Tabs defaultValue="leads" className="space-y-4">
             <TabsList className="bg-slate-100">
               <TabsTrigger value="leads">Leads & Enrichment</TabsTrigger>
               <TabsTrigger value="emails">Email Drafts</TabsTrigger>
@@ -749,7 +750,8 @@ export default function CampaignManager() {
                 </Card>
               )}
             </TabsContent>
-          </Tabs>
+            </Tabs>
+          </>
         )}
       </main>
     </div>
